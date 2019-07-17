@@ -1,0 +1,38 @@
+plugins {
+    id 'java-gradle-plugin'
+    id 'com.gradle.plugin-publish' version '0.10.1'
+}
+
+apply plugin: 'groovy'
+
+
+version = "0.9"
+group = "com.cpdroid.fat_aar"
+
+gradlePlugin {
+    plugins {
+        fatAarPlugin {
+            id = 'com.cpdroid.fat_aar'
+            displayName = 'Fat Aar Plugin'
+            description = 'A plugin to merge dependencies(aar/jar) into aar file'
+            implementationClass = 'com.cpdroid.fat_aar.FatAarPlugin'
+        }
+    }
+}
+
+pluginBundle {
+    website = 'https://github.com/cpdroid/fat-aar'
+    vcsUrl = 'https://github.com/cpdroid/fat-aar.git'
+    tags = ['fat-aar', 'aar', 'fat', 'android']
+}
+
+
+repositories {
+    jcenter()
+    google()
+}
+
+dependencies {
+    implementation 'com.android.tools.build:gradle:3.4.1'
+}
+
