@@ -17,7 +17,7 @@ buildscript {
     }
   }
   dependencies {
-    classpath "gradle.plugin.com.cpdroid.fat_aar:buildSrc:0.9.1"
+    classpath "gradle.plugin.com.cpdroid.fat_aar::fat-aar:0.9.1"
   }
 }
 ```
