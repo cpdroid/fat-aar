@@ -5,8 +5,7 @@ plugins {
 
 apply plugin: 'groovy'
 
-
-version = "0.9"
+version = "0.9.1"
 group = "com.cpdroid.fat_aar"
 
 gradlePlugin {
@@ -23,9 +22,8 @@ gradlePlugin {
 pluginBundle {
     website = 'https://github.com/cpdroid/fat-aar'
     vcsUrl = 'https://github.com/cpdroid/fat-aar.git'
-    tags = ['fat-aar', 'aar', 'fat', 'android']
+    tags = ['fat-aar', 'aar', 'fat', 'android', 'fataar']
 }
-
 
 repositories {
     jcenter()
