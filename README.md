@@ -12,12 +12,10 @@ Add snippet below to your root project's *build.gradle* file:
 ```gradle
 buildscript {
   repositories {
-    maven {
-      url "https://plugins.gradle.org/m2/"
-    }
+    jcenter()
   }
   dependencies {
-    classpath "gradle.plugin.com.cpdroid.fat_aar::fat-aar:0.9.1"
+    classpath 'com.cpdroid:fat-aar:0.9.3'
   }
 }
 ```

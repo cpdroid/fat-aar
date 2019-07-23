@@ -1,28 +1,59 @@
 plugins {
     id 'java-gradle-plugin'
     id 'com.gradle.plugin-publish' version '0.10.1'
+    id "com.jfrog.bintray" version "1.8.4"
 }
 
+apply plugin: 'maven'
+apply plugin: 'java'
 apply plugin: 'groovy'
 
-version = "0.9.1"
-group = "com.cpdroid.fat_aar"
+ext {
+    versionId = '0.9.3'
+    groupId = 'com.cpdroid'
+    name = 'fat-aar'
+    website = 'https://github.com/cpdroid/fat-aar'
+    vcsUrl = 'https://github.com/cpdroid/fat-aar.git'
+    tags = ['fat-aar', 'aar', 'fat', 'android', 'fataar']
+}
+
+version = ext.versionId
+group = ext.groupId
+
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+bintray {
+    user = properties.getProperty('bintrayUser')
+    key = properties.getProperty('bintrayApiKey')
+    configurations = ['archives']
+    pkg {
+        repo = 'gradle'
+        name = project.ext.name
+        licenses = ['MIT']
+        vcsUrl = project.ext.vcsUrl
+        labels = project.ext.tags
+        version {
+            name = project.ext.versionId
+        }
+    }
+}
 
 gradlePlugin {
     plugins {
         fatAarPlugin {
-            id = 'com.cpdroid.fat_aar'
+            id = "${project.ext.groupId}.${project.ext.name}"
             displayName = 'Fat Aar Plugin'
             description = 'A plugin to merge dependencies(aar/jar) into aar file'
-            implementationClass = 'com.cpdroid.fat_aar.FatAarPlugin'
+            implementationClass = "${project.ext.groupId}.fat_aar.FatAarPlugin"
         }
     }
 }
 
 pluginBundle {
-    website = 'https://github.com/cpdroid/fat-aar'
-    vcsUrl = 'https://github.com/cpdroid/fat-aar.git'
-    tags = ['fat-aar', 'aar', 'fat', 'android', 'fataar']
+    website = project.ext.website
+    vcsUrl = project.ext.vcsUrl
+    tags = project.ext.tags
 }
 
 repositories {
@@ -31,6 +62,6 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.android.tools.build:gradle:3.4.1'
+    implementation 'com.android.tools.build:gradle:3.2.1'
 }
 
