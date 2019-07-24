@@ -13,6 +13,8 @@ import org.gradle.api.artifacts.ResolvedArtifact
 import org.gradle.api.file.FileTree
 import org.gradle.api.internal.artifacts.dependencies.DefaultProjectDependency
 import org.gradle.api.internal.artifacts.dependencies.DefaultSelfResolvingDependency
+import org.gradle.api.tasks.TaskContainer
+
 import java.lang.reflect.Field
 import static Utils.*
 
@@ -73,19 +75,29 @@ class FatAarPlugin implements Plugin<Project> {
                     boolean enableProguard = libraryVariant.buildType.minifyEnabled
 
                     //Create a task to decompress dependency file
-                    Task decompressTask = project.task("decompress${flavorBuildType}Dependencies").doLast {
+                    Task decompressTask = project.task("decompress${flavorBuildType}Dependencies", group: 'fat-aar').doLast {
                         decompressDependencies(project)
                     }
 
                     mEmbedConfiguration.dependencies.each {
-                        //I there is a project dependency, must build the dependency project first
+                        //If there is a project dependency, must build the dependency project first
                         if (it instanceof DefaultProjectDependency) {
                             if (it.targetConfiguration == null) it.targetConfiguration = "default"
-                            decompressTask.dependsOn(it.dependencyProject.tasks."bundle${flavorBuildType}Aar")
+
+                            TaskContainer dependencyTasks = it.dependencyProject.tasks
+
+                            //Find the correct dependency project task
+                            if (dependencyTasks.findByName("bundle${flavorBuildType}Aar")) {
+                                decompressTask.dependsOn(dependencyTasks."bundle${flavorBuildType}Aar")
+                            } else if (dependencyTasks.findByName("bundle${buildType.capitalize()}Aar")) {
+                                decompressTask.dependsOn(dependencyTasks."bundle${buildType.capitalize()}Aar")
+                            } else {
+                                throw new Exception("Can not find dependency project task!")
+                            }
                         }
                     }
 
-                    Task addSourceSetsTask = project.task("add${flavorBuildType}SourceSets").doLast {
+                    Task addSourceSetsTask = project.task("add${flavorBuildType}SourceSets", group: 'fat-aar').doLast {
                         embeddedAarDirs.each {
                             deleteAppNameAttribute(it)
                             project.android.sourceSets.main.res.srcDirs += project.file("$it/res")
@@ -98,14 +110,14 @@ class FatAarPlugin implements Plugin<Project> {
                     addSourceSetsTask.dependsOn(decompressTask)
                     project.tasks."pre${flavorBuildType}Build".dependsOn(addSourceSetsTask)
 
-                    Task embedManifestsTask = project.task("embed${flavorBuildType}Manifests").doLast {
+                    Task embedManifestsTask = project.task("embed${flavorBuildType}Manifests", group: 'fat-aar').doLast {
                         embedManifests(flavorBuildType)
                     }
                     embedManifestsTask.dependsOn(project.tasks."process${flavorBuildType}Manifest")
 
                     //Generated R.jar file and merge library jar
-                    Task embedJarTask = project.task("embed${flavorBuildType}LibJarAndRClass").doLast {
-                        generateRJar(flavorName, buildType)
+                    Task embedJarTask = project.task("embed${flavorBuildType}LibJarAndRClass", group: 'fat-aar').doLast {
+                        generateRJar(flavorName, buildType, project.name)
 
                         if (!enableProguard) {
                             embeddedAarDirs.each { aarPath ->
@@ -245,6 +257,7 @@ class FatAarPlugin implements Plugin<Project> {
         }
 
         if (mainManifest == null || !mainManifest.exists()) return
+        logLevel2 "mainManifest:$mainManifest"
 
         List<File> libraryManifests = new ArrayList<>()
         embeddedAarDirs.each {
@@ -258,7 +271,7 @@ class FatAarPlugin implements Plugin<Project> {
         mergeManifest(mainManifest, libraryManifests, reportFile)
     }
 
-    private void generateRJar(String flavorName, String buildType) {
+    private void generateRJar(String flavorName, String buildType, String projectName) {
         List<SymbolTable> tableList = new ArrayList<>()
 
         embeddedAarDirs.each {
@@ -279,6 +292,6 @@ class FatAarPlugin implements Plugin<Project> {
         }
 
         String currentPackageName = new XmlParser().parse(new File(build_dir).parent + "/src/main/AndroidManifest.xml").@package
-        exportToCompiledJava(tableList, currentPackageName, new File("$packaged_class/$flavorName/$buildType/libs/R.jar").toPath())
+        exportToCompiledJava(tableList, currentPackageName, new File("$packaged_class/$flavorName/$buildType/libs/${projectName}_R.jar").toPath())
     }
 }
