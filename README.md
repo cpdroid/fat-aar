@@ -39,6 +39,8 @@ embedded 'com.gongwen:marqueelibrary:1.1.3'
 
 Run gradle assemble task, normally *"assembleRelease"*, copy the generated aar file to your app module's libs directory
 
+[An example can be found here](https://github.com/cpdroid/fat-aar-sample)
+
 ## Features or Issues
 * All android support packages and android jars will be ignored automatically, you must import them in your app module.
 The detailed ignored package can be found in the log.

@@ -36,6 +36,8 @@ embedded 'com.gongwen:marqueelibrary:1.1.3'
 
 运行 *gradle* 任务, 一般来说是 *"assembleRelease"*, 把生成的 *aar* 文件复制进 *app* 模块的 *libs* 目录
 
+[这有个例子](https://github.com/cpdroid/fat-aar-sample)
+
 ## 特性或问题
 * 本插件会自动忽略 *android support* 包和 *android* 开头的 *jar* 包，在 *app* 模块使用的时候必须重新导入，
 具体有哪些被忽略了可以看日志：
