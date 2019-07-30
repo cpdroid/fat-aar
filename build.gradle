@@ -9,7 +9,7 @@ apply plugin: 'java'
 apply plugin: 'groovy'
 
 ext {
-    versionId = '0.9.4'
+    versionId = '1.0.0'
     groupId = 'com.cpdroid'
     name = 'fat-aar'
     website = 'https://github.com/cpdroid/fat-aar'

@@ -46,52 +46,50 @@ class Utils {
         File[] files = new File(aarPath + "/res").listFiles()
         if (files == null) return
 
-        files.sort { it.name }.each {
-            resourceDirectory ->
-                if (!resourceDirectory.isDirectory()) {
+        for (File resourceDirectory : files) {
+            if (!resourceDirectory.isDirectory()) {
+                throw new ResourceDirectoryParseException(
+                        resourceDirectory.getAbsolutePath() + " is not a directory")
+            }
+
+            assert (resourceDirectory.isDirectory())
+
+            ResourceFolderType folderResourceType = ResourceFolderType.getFolderType(resourceDirectory.getName())
+            if (folderResourceType != ResourceFolderType.VALUES) return
+
+            // Iterate all files in the resource directory and handle each one.
+            File[] listFiles = resourceDirectory.listFiles()
+            if (listFiles == null) return
+
+            for (File maybeResourceFile : listFiles) {
+                if (maybeResourceFile.isDirectory()) return
+
+                if (!maybeResourceFile.isFile()) {
                     throw new ResourceDirectoryParseException(
-                            resourceDirectory.getAbsolutePath() + " is not a directory")
+                            "${maybeResourceFile.absolutePath} is not a file nor directory")
                 }
 
-                assert (resourceDirectory.isDirectory())
+                Node node = new XmlParser().parse(maybeResourceFile)
+                NodeList string_node = (NodeList) node.get("string")
 
-                ResourceFolderType folderResourceType = ResourceFolderType.getFolderType(resourceDirectory.getName())
-                if (folderResourceType != ResourceFolderType.VALUES) return
+                int removeCount = 0
 
-                // Iterate all files in the resource directory and handle each one.
-                File[] listFiles = resourceDirectory.listFiles()
-                if (listFiles == null) return
-
-                listFiles.sort { it.name }.each {
-                    maybeResourceFile ->
-                        if (maybeResourceFile.isDirectory()) return
-
-                        if (!maybeResourceFile.isFile()) {
-                            throw new ResourceDirectoryParseException(
-                                    "${maybeResourceFile.absolutePath} is not a file nor directory")
+                if (string_node) {
+                    string_node.each {
+                        Node childNode = (Node) it
+                        if (childNode.attribute("name") == "app_name") {
+                            logLevel2 "Found value [app_name] in [" + maybeResourceFile.getAbsolutePath() + "]"
+                            node.remove(childNode)
+                            removeCount++
                         }
-
-                        Node node = new XmlParser().parse(maybeResourceFile)
-                        NodeList string_node = (NodeList) node.get("string")
-
-                        int removeCount = 0
-
-                        if (string_node) {
-                            string_node.each {
-                                Node childNode = (Node) it
-                                if (childNode.attribute("name") == "app_name") {
-                                    logLevel2 "Found value [app_name] in [" + maybeResourceFile.getAbsolutePath() + "]"
-                                    node.remove(childNode)
-                                    removeCount++
-                                }
-                            }
-                        }
-
-                        if (removeCount > 0) {
-                            logLevel2 "Delete " + removeCount + " values..."
-                            Files.asCharSink(maybeResourceFile, Charsets.UTF_8).write(XmlUtil.serialize(node))
-                        }
+                    }
                 }
+
+                if (removeCount > 0) {
+                    logLevel2 "Delete " + removeCount + " values..."
+                    Files.asCharSink(maybeResourceFile, Charsets.UTF_8).write(XmlUtil.serialize(node))
+                }
+            }
         }
     }
 

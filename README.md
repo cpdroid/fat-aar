@@ -1,6 +1,8 @@
 # fat-aar
-[![License MIT](https://img.shields.io/github/release-pre/cpdroid/fat-aar.svg)](https://github.com/cpdroid/fat-aar/releases/tag/v0.9.1)
-[![Release](https://img.shields.io/github/license/cpdroid/fat-aar.svg)](https://github.com/cpdroid/fat-aar/blob/master/LICENSE)
+[![Release](https://img.shields.io/github/release/cpdroid/fat-aar.svg)](https://github.com/cpdroid/fat-aar/releases)
+[![License MIT](https://img.shields.io/github/license/cpdroid/fat-aar.svg)](https://github.com/cpdroid/fat-aar/blob/master/LICENSE)
+[![Android Gradle Plugin 3.0.0-3.4.2](https://img.shields.io/badge/android--gradle-3.0.0--3.4.2-blue)](https://developer.android.com/studio/releases/gradle-plugin#updating-gradle)
+[![Gradle 4.6-5.1.1](https://img.shields.io/badge/gradle-4.6--5.1.1-blue)](https://developer.android.com/studio/releases/gradle-plugin#updating-gradle)
 
 [中文文档](https://github.com/cpdroid/fat-aar/blob/master/README_CN.md)
 
@@ -8,6 +10,8 @@ A plugin to merge dependencies(aar/jar) into aar file.
 
 This plugin can embed dependency(local or remote) to an aar file, when an app module includes the aar file, the aar's dependencies code and resource 
 can be referenced directly, no need to import once again.
+
+**This plugin has been tested on android gradle plugin 3.0.0-3.4.2 and gradle 4.6-5.1.1.**
 
 ## Usage
 Add snippet below to your root project's *build.gradle* file:
@@ -17,7 +21,7 @@ buildscript {
     jcenter()
   }
   dependencies {
-    classpath 'com.cpdroid:fat-aar:0.9.4'
+    classpath 'com.cpdroid:fat-aar:1.0.0'
   }
 }
 ```
@@ -61,5 +65,3 @@ If you have referenced a module's *app_name*, define an *app_name* in your libra
    Found value [app_name] in [D:\workspace\fat-aar-sample\moduleA\build\aar_plugin\exploded_aar\com.gongwen\marqueelibrary\1.1.3\res\values\values.xml]
    Delete 1 values...
 ```
-
-

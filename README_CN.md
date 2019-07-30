@@ -1,10 +1,14 @@
 # fat-aar
-[![License MIT](https://img.shields.io/github/release-pre/cpdroid/fat-aar.svg)](https://github.com/cpdroid/fat-aar/releases/tag/v0.9.1)
-[![Release](https://img.shields.io/github/license/cpdroid/fat-aar.svg)](https://github.com/cpdroid/fat-aar/blob/master/LICENSE)
+[![Release](https://img.shields.io/github/release/cpdroid/fat-aar.svg)](https://github.com/cpdroid/fat-aar/releases)
+[![License MIT](https://img.shields.io/github/license/cpdroid/fat-aar.svg)](https://github.com/cpdroid/fat-aar/blob/master/LICENSE)
+[![Android Gradle Plugin 3.0.0-3.4.2](https://img.shields.io/badge/android--gradle-3.0.0--3.4.2-blue)](https://developer.android.com/studio/releases/gradle-plugin#updating-gradle)
+[![Gradle 4.6-5.1.1](https://img.shields.io/badge/gradle-4.6--5.1.1-blue)](https://developer.android.com/studio/releases/gradle-plugin#updating-gradle)
 
 Fat-aar是一个将依赖库 *(aar/jar)* 打包进 *aar* 文件的插件.
 
 它能将远程或者本地依赖嵌入 *aar* 文件，当 *app* 模块使用这个 *aar* 文件时，*aar* 依赖的代码跟资源可以直接被引用到，而无需在 *app* 模块里面重新引入一遍.
+
+本插件已经在 *Android gradle plugin* 3.0.0-3.4.2 及 *Gradle* 4.6-5.1.1 版本上测试通过
 
 ## 用法
 在根目录的 *build.gradle* 文件里面添加如下语句:
@@ -14,7 +18,7 @@ buildscript {
     jcenter()
   }
   dependencies {
-    classpath 'com.cpdroid:fat-aar:0.9.4'
+    classpath 'com.cpdroid:fat-aar:1.0.0'
   }
 }
 ```
