@@ -2,10 +2,12 @@
 [![License MIT](https://img.shields.io/github/release-pre/cpdroid/fat-aar.svg)](https://github.com/cpdroid/fat-aar/releases/tag/v0.9.1)
 [![Release](https://img.shields.io/github/license/cpdroid/fat-aar.svg)](https://github.com/cpdroid/fat-aar/blob/master/LICENSE)
 
+[中文文档](https://github.com/cpdroid/fat-aar/blob/master/README_CN.md)
+
 A plugin to merge dependencies(aar/jar) into aar file.
 
-This plugin can embed dependency(local or remote) to an aar file, when an app module includes the aar file, the dependence's code and resource 
-can be referenced directly, no need to import them once again.
+This plugin can embed dependency(local or remote) to an aar file, when an app module includes the aar file, the aar's dependencies code and resource 
+can be referenced directly, no need to import once again.
 
 ## Usage
 Add snippet below to your root project's *build.gradle* file:
@@ -15,7 +17,7 @@ buildscript {
     jcenter()
   }
   dependencies {
-    classpath 'com.cpdroid:fat-aar:0.9.3'
+    classpath 'com.cpdroid:fat-aar:0.9.4'
   }
 }
 ```
@@ -50,7 +52,7 @@ The detailed ignored package can be found in the log.
    Ignore android jar: [android.arch.core:common]
 ```
 
-* All *"app_name"* value in embedded modules will be deleted automatically as it will conflict between modules.
+* All *"app_name"* attributes in embedded modules will be deleted automatically as a few modules has the attributes, and it will conflict while compiling.
 If you have referenced a module's *app_name*, define an *app_name* in your library's *values.xml* file.
 ```bash
 > Task :moduleA:addReleaseSourceSets
