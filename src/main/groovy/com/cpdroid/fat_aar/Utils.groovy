@@ -55,14 +55,14 @@ class Utils {
             assert (resourceDirectory.isDirectory())
 
             ResourceFolderType folderResourceType = ResourceFolderType.getFolderType(resourceDirectory.getName())
-            if (folderResourceType != ResourceFolderType.VALUES) return
+            if (folderResourceType != ResourceFolderType.VALUES) continue
 
             // Iterate all files in the resource directory and handle each one.
             File[] listFiles = resourceDirectory.listFiles()
-            if (listFiles == null) return
+            if (listFiles == null) continue
 
             for (File maybeResourceFile : listFiles) {
-                if (maybeResourceFile.isDirectory()) return
+                if (maybeResourceFile.isDirectory()) continue
 
                 if (!maybeResourceFile.isFile()) {
                     throw new ResourceDirectoryParseException(
