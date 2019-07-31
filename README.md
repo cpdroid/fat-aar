@@ -14,7 +14,7 @@ can be referenced directly, no need to import once again.
 **This plugin has been tested on android gradle plugin 3.0.0-3.4.2 and gradle 4.6-5.1.1.**
 
 ## Usage
-Add snippet below to your root project's *build.gradle* file:
+Add snippet below to your **root project's *build.gradle*** file:
 ```gradle
 buildscript {
   repositories {
@@ -26,7 +26,7 @@ buildscript {
 }
 ```
 
-Add snippet below to you library project's *build.gradle* file:
+Add snippet below to you **library module's *build.gradle*** file:
 ```gradle
 apply plugin: 'com.android.library'
 apply plugin: "com.cpdroid.fat_aar"
@@ -42,6 +42,11 @@ embedded 'com.gongwen:marqueelibrary:1.1.3'
 ```
 
 Run gradle assemble task, normally *"assembleRelease"*, copy the generated aar file to your app module's libs directory
+
+Include the generated aar file in **app module's *build.gradle*** file:
+```gradle
+implementation fileTree(dir: 'libs', include: ['*.aar'])
+```
 
 [An example can be found here](https://github.com/cpdroid/fat-aar-sample)
 

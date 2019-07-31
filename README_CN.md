@@ -11,7 +11,7 @@ Fat-aar是一个将依赖库 *(aar/jar)* 打包进 *aar* 文件的插件.
 本插件已经在 *Android gradle plugin* 3.0.0-3.4.2 及 *Gradle* 4.6-5.1.1 版本上测试通过
 
 ## 用法
-在根目录的 *build.gradle* 文件里面添加如下语句:
+在**根目录的 *build.gradle*** 里面添加如下语句:
 ```gradle
 buildscript {
   repositories {
@@ -23,7 +23,7 @@ buildscript {
 }
 ```
 
-在 *library* 工程的 *build.gradle* 里面添加如下语句:
+在 ***library* 模块的 *build.gradle*** 里面添加如下语句:
 ```gradle
 apply plugin: 'com.android.library'
 apply plugin: "com.cpdroid.fat_aar"
@@ -39,6 +39,11 @@ embedded 'com.gongwen:marqueelibrary:1.1.3'
 ```
 
 运行 *gradle* 任务, 一般来说是 *"assembleRelease"*, 把生成的 *aar* 文件复制进 *app* 模块的 *libs* 目录
+
+在***app* 模块的 *build.gradle*** 里面引入生成的 *aar* 文件:
+```gradle
+implementation fileTree(dir: 'libs', include: ['*.aar'])
+```
 
 [这有个例子](https://github.com/cpdroid/fat-aar-sample)
 
