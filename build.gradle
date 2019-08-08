@@ -54,6 +54,12 @@ pluginBundle {
     website = project.ext.website
     vcsUrl = project.ext.vcsUrl
     tags = project.ext.tags
+    mavenCoordinates {
+        groupId = project.ext.groupId
+        artifactId = project.ext.name
+        version = project.ext.versionId
+    }
+
 }
 
 repositories {
