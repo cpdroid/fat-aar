@@ -26,7 +26,7 @@ buildscript {
 在 ***library* 模块的 *build.gradle*** 里面添加如下语句:
 ```gradle
 apply plugin: 'com.android.library'
-apply plugin: "com.cpdroid.fat_aar"
+apply plugin: "com.cpdroid.fat-aar"
 ```
 
 **确保 'com.cpdroid.fat-aar' 在'com.android.library'后面**

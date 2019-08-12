@@ -29,7 +29,7 @@ buildscript {
 Add snippet below to you **library module's *build.gradle*** file:
 ```gradle
 apply plugin: 'com.android.library'
-apply plugin: "com.cpdroid.fat_aar"
+apply plugin: "com.cpdroid.fat-aar"
 ```
 
 **make sure 'com.cpdroid.fat-aar' is appied after 'com.android.library'**
