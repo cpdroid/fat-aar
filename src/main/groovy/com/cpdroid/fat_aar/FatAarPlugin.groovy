@@ -183,7 +183,7 @@ class FatAarPlugin implements Plugin<Project> {
                     String pkgName = new XmlParser().parse("$destination/AndroidManifest.xml").@package
 
                     //Ignore android support package
-                    if (pkgName.startsWith("android.")) {
+                    if (pkgName.startsWith("android.") || pkgName.startsWith("androidx.")) {
                         logLevel2("Ignore android package: [$pkgName]")
                         return
                     }

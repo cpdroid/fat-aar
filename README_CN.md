@@ -18,7 +18,7 @@ buildscript {
     jcenter()
   }
   dependencies {
-    classpath 'com.cpdroid:fat-aar:1.0.1'
+    classpath 'com.cpdroid:fat-aar:1.0.2'
   }
 }
 ```
