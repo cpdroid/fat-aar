@@ -5,6 +5,9 @@ import groovy.transform.CompileStatic
 import org.gradle.api.artifacts.ResolvedArtifact
 import org.gradle.api.artifacts.ResolvedModuleVersion
 import org.gradle.api.artifacts.component.ComponentArtifactIdentifier
+import org.gradle.api.internal.artifacts.DefaultModuleVersionIdentifier
+import org.gradle.api.internal.artifacts.ivyservice.modulecache.dynamicversions.DefaultResolvedModuleVersion
+import org.gradle.internal.component.local.model.OpaqueComponentArtifactIdentifier
 
 import javax.annotation.Nullable
 
@@ -29,22 +32,23 @@ class LocalResolvedArtifact implements ResolvedArtifact {
 
     @Override
     ResolvedModuleVersion getModuleVersion() {
-        return null;
+        return new DefaultResolvedModuleVersion(
+                DefaultModuleVersionIdentifier.newId("unspecified", getName(), "unspecified"))
     }
 
     @Override
     String getName() {
-        return mFile.getName()
+        return Files.getNameWithoutExtension(mFile.getName())
     }
 
     @Override
     String getType() {
-        return Files.getFileExtension(getName())
+        return Files.getFileExtension(mFile.getName())
     }
 
     @Override
     String getExtension() {
-        return Files.getFileExtension(getName())
+        return Files.getFileExtension(mFile.getName())
     }
 
     @Nullable
@@ -55,6 +59,6 @@ class LocalResolvedArtifact implements ResolvedArtifact {
 
     @Override
     ComponentArtifactIdentifier getId() {
-        return null
+        return new OpaqueComponentArtifactIdentifier(mFile)
     }
 }

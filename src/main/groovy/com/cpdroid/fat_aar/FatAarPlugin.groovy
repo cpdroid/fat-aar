@@ -16,20 +16,28 @@ import org.gradle.api.internal.artifacts.dependencies.DefaultSelfResolvingDepend
 import org.gradle.api.tasks.TaskContainer
 
 import java.lang.reflect.Field
+import java.util.regex.Pattern
+
 import static Utils.*
 
 class FatAarPlugin implements Plugin<Project> {
 
-    private List<File> embeddedJars = new ArrayList()
-    private List<String> embeddedAarDirs = new ArrayList<>()
+    /** The embedded jar file collection */
+    private List<File> mEmbeddedJars = new ArrayList()
+
+    /** The embedded aar directory collection */
+    private List<String> mEmbeddedAarDirs = new ArrayList<>()
 
     private String build_dir
+    private String build_plugin_dir
     private String exploded_aar_dir
     private String packaged_class
     private String intermediates_dir
     private String temp_classes_dir
 
     private String mAndroidGradleVersion
+
+    private FatAarExtension mExtension
 
     private Configuration mEmbedConfiguration
 
@@ -39,13 +47,16 @@ class FatAarPlugin implements Plugin<Project> {
         build_dir = project.buildDir.path.replace(File.separator, '/')
         packaged_class = "$build_dir/intermediates/packaged-classes"
         intermediates_dir = "$build_dir/intermediates"
-        temp_classes_dir = "$build_dir/aar_plugin/temp-classes"
-        exploded_aar_dir = "$build_dir/aar_plugin/exploded_aar"
+        build_plugin_dir = "$build_dir/fat-aar"
+        temp_classes_dir = "$build_plugin_dir/temp-classes"
+        exploded_aar_dir = "$build_plugin_dir/exploded_aar"
 
         project.parent.buildscript.configurations.classpath.dependencies.each {
             if (it.group == "com.android.tools.build" && it.name == "gradle")
                 mAndroidGradleVersion = it.version
         }
+
+        mExtension = project.extensions.create('fataar', FatAarExtension)
     }
 
     @Override
@@ -63,9 +74,9 @@ class FatAarPlugin implements Plugin<Project> {
         }
 
         project.afterEvaluate {
-            logLevel1 "project ':$project.name' embed size:" + mEmbedConfiguration.dependencies.size()
-
+            logLevel2 "project ':$project.name' embed size:" + mEmbedConfiguration.dependencies.size()
             if (mEmbedConfiguration.dependencies.size() <= 0) return
+            if (!mExtension.ignoreAndroidSupport) logLevel2("set attribute [ignoreAndroidSupport] to false")
 
             project.android.libraryVariants.all {
                 libraryVariant ->
@@ -98,7 +109,7 @@ class FatAarPlugin implements Plugin<Project> {
                     }
 
                     Task addSourceSetsTask = project.task("add${flavorBuildType}SourceSets", group: 'fat-aar').doLast {
-                        embeddedAarDirs.each {
+                        mEmbeddedAarDirs.each {
                             deleteAppNameAttribute(it)
                             project.android.sourceSets.main.res.srcDirs += project.file("$it/res")
                             project.android.sourceSets.main.aidl.srcDirs += project.file("$it/aidl")
@@ -120,17 +131,16 @@ class FatAarPlugin implements Plugin<Project> {
                         generateRJar(flavorName, buildType, project.name)
 
                         if (!enableProguard) {
-                            embeddedAarDirs.each { aarPath ->
-
-                                // Copy all additional jar files to bundle lib
+                            mEmbeddedAarDirs.each { aarPath ->
                                 FileTree jars = project.fileTree(dir: aarPath, include: '*.jar', exclude: 'classes.jar')
                                 jars += project.fileTree(dir: "$aarPath/libs", include: '*.jar')
-                                embeddedJars.addAll(jars)
+                                mEmbeddedJars.addAll(jars)
                             }
-                            embeddedJars.addAll(project.fileTree(dir: temp_classes_dir))
+                            mEmbeddedJars.addAll(project.fileTree(dir: temp_classes_dir))
 
+                            // Copy all additional jar files to bundle lib
                             project.copy {
-                                from embeddedJars
+                                from mEmbeddedJars
                                 into project.file("$packaged_class/$flavorName/$buildType/libs")
                             }
                         }
@@ -144,8 +154,9 @@ class FatAarPlugin implements Plugin<Project> {
         }
     }
 
-    /** Decompress all dependencies to build/exploded_aar directory */
+    /** Decompress all dependencies to build/fat-aar/exploded_aar directory */
     private void decompressDependencies(Project project) {
+        project.delete("$build_plugin_dir")
         List<ResolvedArtifact> artifactList = new ArrayList<>()
 
         //Add local dependencies
@@ -161,14 +172,28 @@ class FatAarPlugin implements Plugin<Project> {
         artifactList.each {
             artifact ->
                 String destination = ""
-                String rename_classes_jar = ""
+
+                //aar's 'classes.jar' will be renamed to this variable to avoid conflict
+                String rename_classes = ""
 
                 if (artifact instanceof LocalResolvedArtifact) {
-                    destination = exploded_aar_dir + "/localDependencies/" + Files.getNameWithoutExtension(artifact.name)
-                    rename_classes_jar = Files.getNameWithoutExtension(artifact.name)
+                    destination = exploded_aar_dir + "/localDependencies/" + artifact.name
+                    rename_classes = artifact.name
                 } else {
                     destination = exploded_aar_dir + "/" + artifact.moduleVersion.toString().replace(":", "/")
-                    rename_classes_jar = artifact.name
+                    rename_classes = artifact.name
+                }
+
+                String moduleVersionId = artifact.moduleVersion.toString()
+                for (String pattern : mExtension.getIgnoreDependencies()) {
+                    logVerbose("pattern:[$pattern], artifact:[$artifact.moduleVersion]")
+                    //If somebody want to ignore '${rename_classes}.jar', we infer that it means the aar dependency
+                    if (Pattern.matches(pattern, artifact.name)
+                            || Pattern.matches(pattern, artifact.moduleVersion.toString())
+                            || Pattern.matches(pattern, "${rename_classes}.jar")) {
+                        logLevel2("Ignore matched dependency: [$moduleVersionId]")
+                        return
+                    }
                 }
 
                 if (artifact.type == 'aar') {
@@ -181,9 +206,10 @@ class FatAarPlugin implements Plugin<Project> {
                     }
 
                     String pkgName = new XmlParser().parse("$destination/AndroidManifest.xml").@package
-
+                    logVerbose("AAR:" + artifact + " pkgName: " + pkgName)
                     //Ignore android support package
-                    if (pkgName.startsWith("android.") || pkgName.startsWith("androidx.")) {
+                    if (mExtension.ignoreAndroidSupport &&
+                            (pkgName.startsWith("android.") || pkgName.startsWith("androidx."))) {
                         logLevel2("Ignore android package: [$pkgName]")
                         return
                     }
@@ -195,19 +221,20 @@ class FatAarPlugin implements Plugin<Project> {
                     }
 
                     embeddedPackage.add(pkgName)
-                    if (!embeddedAarDirs.contains(destination)) embeddedAarDirs.add(destination)
+                    if (!mEmbeddedAarDirs.contains(destination)) mEmbeddedAarDirs.add(destination)
 
                     project.copy {
                         from "$destination/classes.jar"
                         into "$temp_classes_dir/"
-                        rename "classes.jar", "${rename_classes_jar}.jar"
+                        rename "classes.jar", "${rename_classes}.jar"
                     }
                 } else if (artifact.type == 'jar') {
-//                    logLevel2 "jar info: " + artifact.name + " " + artifact.id + " " + artifact.classifier + " " + artifact.moduleVersion.id.group
+                    logVerbose "jar info: " + artifact.name + " " + artifact.id + " " + artifact.classifier + " " + artifact.moduleVersion.id.group
                     String groupName = artifact.moduleVersion.id.group + ":" + artifact.name
 
                     //Ignore android jar
-                    if (groupName.startsWith("android.") || groupName.startsWith("com.android.")) {
+                    if (mExtension.ignoreAndroidSupport &&
+                            (groupName.startsWith("android.") || groupName.startsWith("com.android."))) {
                         logLevel2("Ignore android jar: [$groupName]")
                         return
                     }
@@ -218,7 +245,7 @@ class FatAarPlugin implements Plugin<Project> {
                     }
 
                     embeddedPackage.add(groupName)
-                    if (!embeddedJars.contains(artifact.file)) embeddedJars.add(artifact.file)
+                    if (!mEmbeddedJars.contains(artifact.file)) mEmbeddedJars.add(artifact.file)
 
                 } else {
                     throw new Exception("Unhandled Artifact of type ${artifact.type}")
@@ -228,17 +255,21 @@ class FatAarPlugin implements Plugin<Project> {
         reportEmbeddedFiles()
     }
 
+    private void logVerbose(Object value) {
+        if (mExtension.verboseLog) logLevel2(value)
+    }
+
     private void reportEmbeddedFiles() {
         StringBuilder builder = new StringBuilder()
 
         builder.append("\n-- embedded aar dirs --\n")
-        embeddedAarDirs.each {
+        mEmbeddedAarDirs.each {
             builder.append(it)
             builder.append("\n")
         }
 
         builder.append("\n-- embedded jars --\n")
-        embeddedJars.each {
+        mEmbeddedJars.each {
             builder.append(it)
             builder.append("\n")
         }
@@ -260,7 +291,7 @@ class FatAarPlugin implements Plugin<Project> {
         logLevel2 "mainManifest:$mainManifest"
 
         List<File> libraryManifests = new ArrayList<>()
-        embeddedAarDirs.each {
+        mEmbeddedAarDirs.each {
             File manifest = new File("$it/AndroidManifest.xml")
             if (!libraryManifests.contains(manifest) && manifest.exists()) {
                 libraryManifests.add(manifest)
@@ -274,7 +305,7 @@ class FatAarPlugin implements Plugin<Project> {
     private void generateRJar(String flavorName, String buildType, String projectName) {
         List<SymbolTable> tableList = new ArrayList<>()
 
-        embeddedAarDirs.each {
+        mEmbeddedAarDirs.each {
             aarDir ->
                 File resDir = new File(aarDir + "/res")
                 if (resDir.listFiles() == null) return
