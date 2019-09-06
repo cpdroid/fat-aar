@@ -50,7 +50,7 @@ Then you can reference the aar and it's dependencies code and resources.
 [An example can be found here](https://github.com/cpdroid/fat-aar-sample)
 
 ## Configuration
-Add *fataar* closure in ***library module's build.gradle*** file：
+Add *fataar* closure in ***library module's build.gradle*** file:
 ```gradle
 apply plugin: 'com.android.library'
 apply plugin: 'com.cpdroid.fat-aar'
@@ -71,23 +71,23 @@ dependencies {
     ...
 }
 ```
-*fataar* closure is optional, and is in the same level with *android* and *dependencies*. Below is the detailed configuration：
+*fataar* closure is optional, and is in the same level with *android* and *dependencies*. Below is the detailed configuration:
 * ***verboseLog***: Default vaule is *false*, set to  *true* to show more log
 * ***ignoreAndroidSupport***: Whether ignore android support package automatically, default is *true*, *false* means won't ignore android support package
-* ***ignoreDependencies***: Determine which dependency won't be embedded into aar, we can use it as follows：
+* ***ignoreDependencies***: Determine which dependency won't be embedded into aar, we can use it as follows:
   + match the ***'group:name:version'*** pattern
   ```gradle
     ignoreDependencies 'com.google.code.gson:gson:2.8.2'
   ```
-  + only match the ***'name'*** pattern(part between two colon)：
+  + only match the ***'name'*** pattern(part between two colon):
   ```gradle
     ignoreDependencies 'gson'
   ```
-  + regex match：
+  + regex match:
   ```gradle
     ignoreDependencies '^com.android.*'
   ```
-  + you can add more than one *ignoreDependencies*, and it accept more than one patten：
+  + you can add more than one *ignoreDependencies*, and it accept more than one patten:
   ```gradle
     fataar {
         ignoreDependencies 'com.blankj:utilcode:1.23.7', 'gson'    //accept more than one pattern,split by ','
@@ -107,7 +107,7 @@ Set ***verboseLog*** to *true* to see more log like this:
 
 ## Features or Issues
 * All android support packages and android jars will be ignored automatically, you must import them in your app module.
-The detailed ignored package can be found in the log.
+The detailed ignored package can be found in the log:
 ```bash
 > Task :moduleA:decompressReleaseDependencies
    Ignore android package: [android.support.v7.appcompat]
@@ -119,7 +119,7 @@ The detailed ignored package can be found in the log.
 ```
 
 * All *"app_name"* attributes in embedded modules will be deleted automatically as a few modules has the attributes, and it will conflict while compiling.
-If you have referenced a module's *app_name*, define an *app_name* in your library's *values.xml* file.
+If you have referenced a module's *app_name*, define an *app_name* in your library's *values.xml* file. The detail will be showed as follows:
 ```bash
 > Task :moduleA:addReleaseSourceSets
    Found value [app_name] in [D:\workspace\fat-aar-sample\moduleA\build\fat-aar\exploded_aar\com.gongwen\marqueelibrary\1.1.3\res\values\values.xml]

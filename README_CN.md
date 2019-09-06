@@ -8,7 +8,7 @@ Fat-aar是一个能将依赖库 *(aar/jar)* 打包进 *aar* 文件的插件.
 
 它能将远程或本地依赖打包进 *aar* 文件，当 *app* 模块使用这个 *aar* 文件时，*aar* 依赖的代码跟资源可以直接被引用到，而无需在 *app* 模块里面重新引入一遍.
 
-本插件支持 *Android gradle plugin* 3.0.0-3.4.2 及 *Gradle* 4.6-5.1.1 版本
+本插件支持 *Android gradle plugin* 3.0.0-3.4.2 及 *Gradle* 4.6-5.1.1 版本.
 
 ## 用法
 在**根目录的 *build.gradle*** 里面添加如下语句:
@@ -47,7 +47,7 @@ implementation fileTree(dir: 'libs', include: ['*.aar'])
 [这有个例子](https://github.com/cpdroid/fat-aar-sample)
 
 ## 配置
-在 ***library* 模块的 *build.gradle*** 里添加 *fataar* 可以进行自定义配置：
+在 ***library* 模块的 *build.gradle*** 里添加 *fataar* 闭包可以进行自定义配置：
 ```gradle
 apply plugin: 'com.android.library'
 apply plugin: 'com.cpdroid.fat-aar'
@@ -116,9 +116,8 @@ dependencies {
    Ignore android jar: [android.arch.core:common]
 ```
 
-
-* 依赖库的资源里的 *"app_name"* 字段会被自动删除，因为很多依赖库都有这一字段，编译时会冲突导致编译失败。
-如果想用这个字段请在 *library* 的 *values.xml* 里重新定义一个
+* 依赖库的资源里的 *"app_name"* 字段会被自动删除，因为很多依赖库都有这一字段，编译时会冲突导致编译失败，
+如果想用这个字段请在 *library* 的 *values.xml* 里重新定义一个。下面的日志显示删除了 *"app_name"* 的文件：
 ```bash
 > Task :moduleA:addReleaseSourceSets
    Found value [app_name] in [D:\workspace\fat-aar-sample\moduleA\build\fat-aar\exploded_aar\com.gongwen\marqueelibrary\1.1.3\res\values\values.xml]
